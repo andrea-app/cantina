@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="La mia Cantina">
+<meta name="theme-color" content="#1a0a0a">
+<title>La mia Cantina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Crimson+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a0a0a;
+  --paper: #f7f2ec;
+  --paper2: #ede6da;
+  --paper3: #e3d9c8;
+  --wine: #6b1a2a;
+  --wine-light: #9b3a4f;
+  --wine-pale: #f0e0e4;
+  --gold: #b8922a;
+  --gold-light: #d4ad50;
+  --muted: #7a6a5a;
+  --border: rgba(107,26,42,0.15);
+  --shadow: 0 4px 24px rgba(26,10,10,0.12);
+  --r: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--ink);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* APP SHELL */
+#app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* HEADER */
+.header {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 1rem 1.25rem 0.85rem;
+  flex-shrink: 0;
+  position: relative;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+.app-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--paper);
+}
+.app-title span { color: var(--gold-light); }
+.header-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
+  color: var(--paper);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: background 0.15s;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.15); }
+.stats-row {
+  display: flex; gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 0.7rem;
+}
+.stat {
+  flex: 1;
+  text-align: center;
+  padding: 0 0.5rem;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+.stat:last-child { border-right: none; }
+.stat-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--gold-light);
+  line-height: 1;
+}
+.stat-label { font-size: 10px; color: rgba(247,242,236,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+
+/* TOOLBAR */
+.toolbar {
+  background: var(--paper2);
+  padding: 0.6rem 1rem;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.search-wrap { flex: 1; position: relative; }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
+.search {
+  width: 100%;
+  padding: 7px 10px 7px 32px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--paper);
+  font-family: 'Crimson Pro', serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+.search:focus { outline: none; border-color: var(--wine-light); }
+.filter-select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--paper);
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  max-width: 110px;
+}
+.filter-select:focus { outline: none; }
+.view-toggle { display: flex; gap: 4px; }
+.vbtn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.vbtn.active { background: var(--wine); color: var(--paper); border-color: var(--wine); }
+
+/* CONTENT */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem;
+}
+
+/* GRID */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.wine-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.wine-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--type-color, var(--wine));
+}
+.wine-card:active { transform: scale(0.97); }
+.card-type-badge {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: flex; align-items: center; gap: 4px;
+}
+.card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.card-producer { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  margin-top: 6px;
+}
+.mini-stars { font-size: 11px; color: var(--gold); letter-spacing: -1px; }
+.mini-bottles { font-size: 12px; color: var(--muted); }
+
+/* LIST */
+.wine-list { display: flex; flex-direction: column; gap: 8px; }
+.list-item {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.list-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--type-color, var(--wine));
+}
+.list-item:active { transform: scale(0.98); }
+.list-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--paper2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.list-main { flex: 1; min-width: 0; }
+.list-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.list-sub { font-size: 13px; color: var(--muted); }
+.list-right { text-align: right; flex-shrink: 0; }
+.list-bottles { font-size: 13px; color: var(--muted); }
+.list-stars { font-size: 12px; color: var(--gold); }
+
+/* FAB */
+.fab {
+  position: absolute;
+  bottom: 1.25rem; right: 1.25rem;
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: var(--wine);
+  color: var(--paper);
+  border: none;
+  cursor: pointer;
+  font-size: 26px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(107,26,42,0.4);
+  transition: transform 0.15s, background 0.15s;
+  z-index: 10;
+}
+.fab:active { transform: scale(0.92); background: var(--wine-light); }
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted);
+}
+.empty-icon { font-size: 56px; margin-bottom: 1rem; opacity: 0.5; }
+.empty h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+.empty p { font-size: 15px; }
+
+/* MODAL */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,10,10,0.6);
+  z-index: 50;
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } }
+.sheet {
+  background: var(--paper);
+  border-radius: 20px 20px 0 0;
+  max-height: 92dvh;
+  overflow-y: auto;
+  animation: slideUp 0.25s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } }
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--paper3);
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+.sheet-header {
+  padding: 1rem 1.25rem 0.75rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.sheet-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 600;
+}
+.close-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--paper2);
+  border: none; cursor: pointer;
+  font-size: 16px; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+}
+.sheet-body { padding: 1rem 1.25rem 2rem; }
+
+/* FORM */
+.form-group { margin-bottom: 1rem; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--paper2);
+  font-family: 'Crimson Pro', serif;
+  font-size: 16px;
+  color: var(--ink);
+  appearance: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--wine-light);
+  background: var(--paper);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* TYPE SELECT PILLS */
+.type-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.type-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--paper2);
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--ink);
+}
+.type-pill.selected {
+  background: var(--wine);
+  color: var(--paper);
+  border-color: var(--wine);
+}
+
+/* STAR RATING */
+.star-row { display: flex; gap: 6px; }
+.star-btn {
+  font-size: 28px;
+  background: none; border: none; cursor: pointer;
+  color: var(--paper3);
+  transition: color 0.1s, transform 0.1s;
+  padding: 0;
+  line-height: 1;
+}
+.star-btn.lit { color: var(--gold); }
+.star-btn:active { transform: scale(1.3); }
+
+/* ACTION BTNS */
+.btn-row { display: flex; gap: 10px; margin-top: 1.25rem; }
+.btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: 10px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.btn-primary { background: var(--wine); color: var(--paper); }
+.btn-primary:active { background: var(--wine-light); }
+.btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
+.btn-ghost:active { background: var(--paper2); }
+.btn-danger { background: transparent; color: #b33; border-color: rgba(180,0,0,0.2); }
+.btn-danger:active { background: rgba(180,0,0,0.08); }
+
+/* DETAIL */
+.detail-hero {
+  display: flex; align-items: flex-start; gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.detail-icon {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: var(--wine-pale);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+}
+.detail-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px; font-weight: 600;
+  line-height: 1.2; margin-bottom: 3px;
+}
+.detail-producer { font-size: 15px; color: var(--muted); }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+.detail-chip {
+  background: var(--paper2);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+.detail-chip-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 3px; }
+.detail-chip-val { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; }
+.detail-section { margin-bottom: 1rem; }
+.detail-section-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted); margin-bottom: 5px;
+}
+.detail-text {
+  background: var(--paper2);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* MENU */
+.menu-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,10,10,0.5);
+  z-index: 60;
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  animation: fadeIn 0.15s ease;
+}
+.menu-sheet {
+  background: var(--paper);
+  border-radius: 20px 20px 0 0;
+  padding: 1rem 1.25rem 2rem;
+  animation: slideUp 0.2s ease;
+}
+.menu-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.menu-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0.85rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 17px;
+  color: var(--ink);
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:active { background: var(--paper2); border-radius: 8px; }
+.menu-icon { font-size: 20px; width: 28px; text-align: center; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 90px; left: 50%; transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 200;
+  animation: toastIn 0.2s ease, toastOut 0.3s ease 2s forwards;
+  white-space: nowrap;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+@keyframes toastOut { to { opacity: 0; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const TYPES = ['Rosso','Bianco','Rosé','Bollicine','Passito','Altro'];
+const TYPE_ICONS = {Rosso:'🍷',Bianco:'🥂',Rosé:'🌸',Bollicine:'🍾',Passito:'🍯',Altro:'🍶'};
+const TYPE_COLORS = {Rosso:'#6b1a2a',Bianco:'#b8922a',Rosé:'#c45a7e',Bollicine:'#2a5a8b',Passito:'#4a7a2a',Altro:'#5a4a3a'};
+
+let wines = JSON.parse(localStorage.getItem('cantina_v2')||'[]');
+let view = localStorage.getItem('cantina_view')||'grid';
+let filterType = '';
+let search = '';
+let mode = 'list'; // list | form | detail | menu
+let editId = null;
+let detailId = null;
+let formData = {};
+let hoverStar = 0;
+
+function save(){ localStorage.setItem('cantina_v2', JSON.stringify(wines)); }
+function saveView(v){ localStorage.setItem('cantina_view', v); }
+
+function totalBottles(){ return wines.reduce((s,w)=>s+(parseInt(w.bottles)||0),0); }
+function avgRating(){ const r=wines.filter(w=>w.rating>0); return r.length?(r.reduce((s,w)=>s+w.rating,0)/r.length).toFixed(1):'—'; }
+function totalValue(){ return wines.reduce((s,w)=>s+(parseFloat(w.price)||0)*(parseInt(w.bottles)||0),0); }
+function fmtEur(n){ return '€'+(n||0).toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+
+function filtered(){
+  return wines.filter(w=>{
+    const q=search.toLowerCase();
+    const ms=!q||(w.name||'').toLowerCase().includes(q)||(w.producer||'').toLowerCase().includes(q)||(w.vintage||'').includes(q);
+    const mt=!filterType||w.type===filterType;
+    return ms&&mt;
+  });
+}
+
+function starsHtml(n, size=14){
+  let s='';
+  for(let i=1;i<=5;i++) s+=`<span style="color:${i<=n?'#b8922a':'#d3c9b8'};font-size:${size}px">★</span>`;
+  return s;
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(wines,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`cantina_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('Export completato ✓');
+}
+
+function importJSON(){
+  const input=document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        if(!Array.isArray(data)) throw new Error();
+        const merged=[...wines];
+        let added=0;
+        data.forEach(w=>{
+          if(!merged.find(x=>x.id===w.id)){ merged.push(w); added++; }
+        });
+        wines=merged; save(); mode='list'; render();
+        showToast(`${added} vini importati ✓`);
+      }catch(e){ showToast('File non valido'); }
+    };
+    r.readAsText(f);
+  };
+  input.click();
+}
+
+function openAdd(){ formData={rating:0,type:'Rosso',bottles:1}; editId=null; mode='form'; render(); }
+function openEdit(id){ const w=wines.find(x=>x.id===id); formData={...w}; editId=id; mode='form'; detailId=null; render(); }
+function openDetail(id){ detailId=id; mode='detail'; render(); }
+function openMenu(){ mode='menu'; render(); }
+function closeOverlay(){ mode='list'; editId=null; detailId=null; render(); }
+
+function submitForm(){
+  const name=(document.getElementById('f-name')||{}).value||'';
+  if(!name.trim()){ showToast('Inserisci il nome del vino'); return; }
+  const w={
+    id: editId||Date.now().toString(),
+    name: name.trim(),
+    producer:(document.getElementById('f-producer')||{}).value||'',
+    vintage:(document.getElementById('f-vintage')||{}).value||'',
+    type: formData.type||'Rosso',
+    bottles:parseInt((document.getElementById('f-bottles')||{}).value)||1,
+    price:(document.getElementById('f-price')||{}).value||'',
+    rating:formData.rating||0,
+    pairing:(document.getElementById('f-pairing')||{}).value||'',
+    notes:(document.getElementById('f-notes')||{}).value||'',
+  };
+  if(editId) wines=wines.map(x=>x.id===editId?w:x);
+  else wines.unshift(w);
+  save(); mode='list'; editId=null; render();
+  showToast(editId?'Modifiche salvate ✓':'Vino aggiunto ✓');
+}
+
+function deleteWine(id){
+  if(!confirm('Eliminare questo vino dalla cantina?')) return;
+  wines=wines.filter(w=>w.id!==id);
+  save(); mode='list'; detailId=null; render();
+  showToast('Vino eliminato');
+}
+
+function pickType(t){ formData.type=t; render(); }
+function setStar(n){ hoverStar=n; renderStars(); }
+function clearStar(){ hoverStar=0; renderStars(); }
+function pickStar(n){ formData.rating=n; hoverStar=0; renderStars(); }
+function renderStars(){
+  const el=document.getElementById('star-row'); if(!el) return;
+  const active=hoverStar||formData.rating||0;
+  el.innerHTML=Array.from({length:5},(_,i)=>`<button class="star-btn${i<active?' lit':''}" onmouseover="setStar(${i+1})" onmouseout="clearStar()" onclick="pickStar(${i+1})">★</button>`).join('');
+}
+
+function renderMain(){
+  const list=filtered();
+  const tvStr=totalValue()>0?fmtEur(totalValue()):'—';
+
+  return `
+<div class="header">
+  <div class="header-top">
+    <div class="app-title">La mia <span>Cantina</span></div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="openMenu()" title="Menu">⋯</button>
+      <button class="icon-btn" onclick="openAdd()" title="Aggiungi">+</button>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val">${wines.length}</div><div class="stat-label">Vini</div></div>
+    <div class="stat"><div class="stat-val">${totalBottles()}</div><div class="stat-label">Bottiglie</div></div>
+    <div class="stat"><div class="stat-val">${avgRating()}</div><div class="stat-label">Rating</div></div>
+    <div class="stat"><div class="stat-val">${tvStr}</div><div class="stat-label">Valore</div></div>
+  </div>
+</div>
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search" placeholder="Cerca…" value="${search}" oninput="search=this.value;render()">
+  </div>
+  <select class="filter-select" onchange="filterType=this.value;render()">
+    <option value="">Tutti</option>
+    ${TYPES.map(t=>`<option value="${t}"${filterType===t?' selected':''}>${TYPE_ICONS[t]} ${t}</option>`).join('')}
+  </select>
+  <div class="view-toggle">
+    <button class="vbtn${view==='grid'?' active':''}" onclick="view='grid';saveView('grid');render()" title="Griglia">⊞</button>
+    <button class="vbtn${view==='list'?' active':''}" onclick="view='list';saveView('list');render()" title="Lista">☰</button>
+  </div>
+</div>
+<div class="content">
+  ${list.length===0?`
+    <div class="empty">
+      <div class="empty-icon">🍷</div>
+      <h3>La cantina è vuota</h3>
+      <p>Aggiungi il tuo primo vino<br>premendo il + in alto</p>
+    </div>
+  `:view==='grid'?renderGrid(list):renderList(list)}
+</div>
+<button class="fab" onclick="openAdd()">+</button>`;
+}
+
+function renderGrid(list){
+  return `<div class="grid">${list.map(w=>`
+    <div class="wine-card" style="--type-color:${TYPE_COLORS[w.type]||TYPE_COLORS.Altro}" onclick="openDetail('${w.id}')">
+      <div class="card-type-badge">${TYPE_ICONS[w.type]||'🍶'} ${w.type}</div>
+      <div class="card-name">${w.name}</div>
+      <div class="card-producer">${w.producer||'—'}${w.vintage?' · '+w.vintage:''}</div>
+      <div class="card-footer">
+        <span>${starsHtml(w.rating,11)}</span>
+        <span class="mini-bottles">🍾 ${w.bottles}</span>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function renderList(list){
+  return `<div class="wine-list">${list.map(w=>`
+    <div class="list-item" style="--type-color:${TYPE_COLORS[w.type]||TYPE_COLORS.Altro}" onclick="openDetail('${w.id}')">
+      <div class="list-icon">${TYPE_ICONS[w.type]||'🍶'}</div>
+      <div class="list-main">
+        <div class="list-name">${w.name}</div>
+        <div class="list-sub">${w.producer||'—'}${w.vintage?' · '+w.vintage:''}</div>
+      </div>
+      <div class="list-right">
+        <div class="list-stars">${starsHtml(w.rating,12)}</div>
+        <div class="list-bottles">🍾 ${w.bottles}</div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function renderForm(){
+  const isEdit=!!editId;
+  return `<div class="overlay" onclick="if(event.target===this)closeOverlay()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">${isEdit?'Modifica vino':'Nuovo vino'}</span>
+      <button class="close-btn" onclick="closeOverlay()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <label class="form-label">Nome vino *</label>
+        <input id="f-name" class="form-input" placeholder="es. Brunello di Montalcino" value="${formData.name||''}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Produttore</label>
+          <input id="f-producer" class="form-input" placeholder="es. Biondi-Santi" value="${formData.producer||''}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Annata</label>
+          <input id="f-vintage" class="form-input" placeholder="2019" value="${formData.vintage||''}" maxlength="4" inputmode="numeric">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipologia</label>
+        <div class="type-pills">
+          ${TYPES.map(t=>`<button class="type-pill${(formData.type||'Rosso')===t?' selected':''}" onclick="pickType('${t}')">${TYPE_ICONS[t]} ${t}</button>`).join('')}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">N° bottiglie</label>
+          <input id="f-bottles" class="form-input" type="number" min="1" value="${formData.bottles||1}" inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prezzo / bott. (€)</label>
+          <input id="f-price" class="form-input" type="number" step="0.01" min="0" placeholder="0.00" value="${formData.price||''}" inputmode="decimal">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valutazione personale</label>
+        <div class="star-row" id="star-row">
+          ${Array.from({length:5},(_,i)=>`<button class="star-btn${i<(formData.rating||0)?' lit':''}" onmouseover="setStar(${i+1})" onmouseout="clearStar()" onclick="pickStar(${i+1})">★</button>`).join('')}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Abbinamenti cibo</label>
+        <input id="f-pairing" class="form-input" placeholder="es. Bistecca, formaggi stagionati" value="${formData.pairing||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note di degustazione</label>
+        <textarea id="f-notes" class="form-textarea" placeholder="Colore, profumo, gusto, persistenza…">${formData.notes||''}</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="closeOverlay()">Annulla</button>
+        <button class="btn btn-primary" onclick="submitForm()">${isEdit?'Salva':'Aggiungi'}</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderDetail(){
+  const w=wines.find(x=>x.id===detailId); if(!w) return '';
+  return `<div class="overlay" onclick="if(event.target===this)closeOverlay()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">Scheda vino</span>
+      <button class="close-btn" onclick="closeOverlay()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="detail-hero">
+        <div class="detail-icon">${TYPE_ICONS[w.type]||'🍶'}</div>
+        <div>
+          <div class="detail-name">${w.name}</div>
+          <div class="detail-producer">${w.producer||''}${w.vintage?' · Annata '+w.vintage:''}</div>
+          <div style="margin-top:6px">${starsHtml(w.rating,16)}</div>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-chip">
+          <div class="detail-chip-label">Tipologia</div>
+          <div class="detail-chip-val">${TYPE_ICONS[w.type]} ${w.type}</div>
+        </div>
+        <div class="detail-chip">
+          <div class="detail-chip-label">Bottiglie</div>
+          <div class="detail-chip-val">🍾 ${w.bottles}</div>
+        </div>
+        <div class="detail-chip">
+          <div class="detail-chip-label">Prezzo / bott.</div>
+          <div class="detail-chip-val">${w.price?'€'+parseFloat(w.price).toFixed(2):'—'}</div>
+        </div>
+        <div class="detail-chip">
+          <div class="detail-chip-label">Valore totale</div>
+          <div class="detail-chip-val">${w.price&&w.bottles?fmtEur(parseFloat(w.price)*parseInt(w.bottles)):'—'}</div>
+        </div>
+      </div>
+      ${w.pairing?`<div class="detail-section"><div class="detail-section-label">🍽 Abbinamenti</div><div class="detail-text">${w.pairing}</div></div>`:''}
+      ${w.notes?`<div class="detail-section"><div class="detail-section-label">📝 Note di degustazione</div><div class="detail-text">${w.notes}</div></div>`:''}
+      <div class="btn-row">
+        <button class="btn btn-danger" onclick="deleteWine('${w.id}')">Elimina</button>
+        <button class="btn btn-ghost" onclick="openEdit('${w.id}')">Modifica</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderMenu(){
+  return `<div class="menu-overlay" onclick="if(event.target===this)closeOverlay()">
+  <div class="menu-sheet">
+    <div class="menu-title">Gestione cantina</div>
+    <div class="menu-item" onclick="exportJSON();closeOverlay()">
+      <span class="menu-icon">📤</span> Esporta dati (JSON)
+    </div>
+    <div class="menu-item" onclick="closeOverlay();setTimeout(importJSON,100)">
+      <span class="menu-icon">📥</span> Importa dati (JSON)
+    </div>
+    <div class="menu-item" onclick="closeOverlay()">
+      <span class="menu-icon">✕</span> Chiudi
+    </div>
+  </div>
+</div>`;
+}
+
+function render(){
+  const app=document.getElementById('app');
+  let html=`<div style="height:100%;display:flex;flex-direction:column;position:relative">${renderMain()}</div>`;
+  if(mode==='form') html+=renderForm();
+  if(mode==='detail'&&detailId) html+=renderDetail();
+  if(mode==='menu') html+=renderMenu();
+  app.innerHTML=html;
+}
+
+render();
+</script>
+</body>
+</html>
