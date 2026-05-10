@@ -269,6 +269,7 @@ function totalValue(){ return wines.reduce((s,w)=>s+(+w.price||0)*(+w.bottles||0
 
 function filteredWines(){
   return wines.filter(w=>{
+    if((+w.bottles||0)<=0) return false;
     const q=search.toLowerCase();
     return (!q||(w.name||'').toLowerCase().includes(q)||(w.producer||'').toLowerCase().includes(q)||(w.vintage||'').includes(q))
         && (!filterType||w.type===filterType);
