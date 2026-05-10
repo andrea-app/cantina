@@ -474,10 +474,13 @@ function starButtons(active){
   return Array.from({length:5},(_,i)=>`<span class="s-star${i<active?' lit':''}" data-star="${i+1}">★</span>`).join('');
 }
 function attachStarEvents(){
-  const c=document.getElementById('star-container'); if(!c) return;
-  c.addEventListener('mouseover', e=>{ const s=e.target.dataset.star; if(s){ c.innerHTML=starButtons(+s); } });
-  c.addEventListener('mouseout', ()=>{ c.innerHTML=starButtons(starRating); });
-  c.addEventListener('click', e=>{ const s=e.target.dataset.star; if(s){ starRating=+s; c.innerHTML=starButtons(starRating); } });
+  // Use requestAnimationFrame to ensure DOM is ready after showOverlay injection
+  requestAnimationFrame(()=>{
+    const c=document.getElementById('star-container'); if(!c) return;
+    c.addEventListener('mouseover', e=>{ const s=e.target.closest('[data-star]'); if(s){ c.innerHTML=starButtons(+s.dataset.star); } });
+    c.addEventListener('mouseout', ()=>{ c.innerHTML=starButtons(starRating); });
+    c.addEventListener('click', e=>{ const s=e.target.closest('[data-star]'); if(s){ starRating=+s.dataset.star; c.innerHTML=starButtons(starRating); } });
+  });
 }
 
 // ─── FORM ────────────────────────────────────────────────────
@@ -490,6 +493,10 @@ function formSheet(){
       <div class="form-row">
         <div class="form-group"><label class="form-label">Produttore</label><input id="f-producer" class="form-input" placeholder="es. Biondi-Santi" value="${formData.producer||''}"></div>
         <div class="form-group"><label class="form-label">Annata</label><input id="f-vintage" class="form-input" placeholder="2019" value="${formData.vintage||''}" maxlength="4" inputmode="numeric"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Vitigni</label><input id="f-grapes" class="form-input" placeholder="es. Sangiovese, Merlot" value="${formData.grapes||''}"></div>
+        <div class="form-group"><label class="form-label">Gradazione (%)</label><input id="f-abv" class="form-input" type="number" step="0.1" min="0" max="25" placeholder="13.5" value="${formData.abv||''}" inputmode="decimal"></div>
       </div>
       <div class="form-group">
         <label class="form-label">Tipologia</label>
@@ -527,6 +534,8 @@ async function submitForm(){
   const w={
     name, producer:document.getElementById('f-producer').value,
     vintage:document.getElementById('f-vintage').value,
+    grapes:document.getElementById('f-grapes').value,
+    abv:document.getElementById('f-abv').value,
     type:formData.type||'Rosso',
     bottles:+document.getElementById('f-bottles').value||1,
     price:document.getElementById('f-price').value,
@@ -617,6 +626,8 @@ function detailSheet(id){
         <div class="chip"><div class="chip-label">Bottiglie</div><div class="chip-val">🍾 ${w.bottles}</div></div>
         <div class="chip"><div class="chip-label">Prezzo / bott.</div><div class="chip-val">${w.price?'€'+parseFloat(w.price).toFixed(2):'—'}</div></div>
         <div class="chip"><div class="chip-label">Valore totale</div><div class="chip-val">${w.price&&w.bottles?fmtEur(+w.price*+w.bottles):'—'}</div></div>
+        ${w.grapes?`<div class="chip" style="grid-column:1/-1"><div class="chip-label">🍇 Vitigni</div><div class="chip-val" style="font-size:15px">${w.grapes}</div></div>`:''}
+        ${w.abv?`<div class="chip"><div class="chip-label">🌡 Gradazione</div><div class="chip-val">${w.abv}%</div></div>`:''}
       </div>
       ${w.pairing?`<div class="detail-section"><div class="section-label">🍽 Abbinamenti</div><div class="detail-text">${w.pairing}</div></div>`:''}
       ${w.notes?`<div class="detail-section"><div class="section-label">📝 Note di degustazione</div><div class="detail-text">${w.notes}</div></div>`:''}
