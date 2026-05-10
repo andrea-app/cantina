@@ -263,9 +263,10 @@ function showToast(msg){
   document.body.appendChild(t); setTimeout(()=>t.remove(),2600);
 }
 
-function totalBottles(){ return wines.reduce((s,w)=>s+(+w.bottles||0),0); }
-function avgRating(){ const r=wines.filter(w=>w.rating>0); return r.length?(r.reduce((s,w)=>s+w.rating,0)/r.length).toFixed(1):'—'; }
-function totalValue(){ return wines.reduce((s,w)=>s+(+w.price||0)*(+w.bottles||0),0); }
+function activeWines(){ return wines.filter(w=>(+w.bottles||0)>0); }
+function totalBottles(){ return activeWines().reduce((s,w)=>s+(+w.bottles||0),0); }
+function avgRating(){ const r=activeWines().filter(w=>w.rating>0); return r.length?(r.reduce((s,w)=>s+w.rating,0)/r.length).toFixed(1):'—'; }
+function totalValue(){ return activeWines().reduce((s,w)=>s+(+w.price||0)*(+w.bottles||0),0); }
 
 function filteredWines(){
   return wines.filter(w=>{
@@ -375,8 +376,10 @@ function buildShell(){
 // ─── CONTENT RENDERING ───────────────────────────────────────
 function renderContent(){
   // stats
-  document.getElementById('s-wines').textContent=wines.length;
+  document.getElementById('s-wines').textContent=activeWines().length;
   document.getElementById('s-bottles').textContent=totalBottles();
+  document.getElementById('tab-cantina').textContent='🍷 Cantina ('+activeWines().length+')';
+  document.getElementById('tab-bevuti').textContent='🥂 Bevuti ('+consumed.length+')';
   document.getElementById('s-rating').textContent=avgRating();
   const tv=totalValue(); document.getElementById('s-value').textContent=tv>0?fmtEur(tv):'—';
 
