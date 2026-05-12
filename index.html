@@ -518,13 +518,14 @@ function formSheet(){
 
 function attachFormEvents(){
   attachStarEvents();
-  document.getElementById('form-close').addEventListener('click', closeOverlay);
-  document.getElementById('form-cancel').addEventListener('click', closeOverlay);
-  document.getElementById('form-submit').addEventListener('click', submitForm);
-  document.getElementById('type-pills').addEventListener('click', e=>{
-    const btn=e.target.closest('[data-type]'); if(!btn) return;
-    formData.type=btn.dataset.type;
-    document.querySelectorAll('#type-pills .type-pill').forEach(b=>b.classList.toggle('sel',b.dataset.type===formData.type));
+  // type pills — local delegation since not in overlay-root listener
+  requestAnimationFrame(()=>{
+    const pills=document.getElementById('type-pills'); if(!pills) return;
+    pills.addEventListener('click', e=>{
+      const btn=e.target.closest('[data-type]'); if(!btn) return;
+      formData.type=btn.dataset.type;
+      document.querySelectorAll('#type-pills .type-pill').forEach(b=>b.classList.toggle('sel',b.dataset.type===formData.type));
+    });
   });
 }
 
@@ -571,10 +572,17 @@ function drinkSheet(id){
   </div>`;
 }
 
-// attach after render
+// Single unified listener — uses closest() so clicks on child elements work too
 document.getElementById('overlay-root').addEventListener('click', async e=>{
-  if(e.target.id==='drink-close'||e.target.id==='drink-cancel'){ closeOverlay(); return; }
-  if(e.target.id==='drink-submit'){
+  const btn = e.target.closest('[id]');
+  if(!btn) return;
+  const id = btn.id;
+
+  if(id==='detail-close'||id==='drink-close'||id==='drink-cancel'||id==='form-close'||id==='form-cancel'||id==='menu-close'){ closeOverlay(); return; }
+
+  if(id==='form-submit'){ submitForm(); return; }
+
+  if(id==='drink-submit'){
     const w=wines.find(x=>x.id===drinkId); if(!w) return;
     const qty=+document.getElementById('d-qty').value||1;
     const dateLabel=document.getElementById('d-date').value;
@@ -589,24 +597,25 @@ document.getElementById('overlay-root').addEventListener('click', async e=>{
     }catch(err){ showToast('Errore'); }
     return;
   }
-  if(e.target.id==='detail-edit'){ openEdit(detailId); return; }
-  if(e.target.id==='detail-drink'){ openDrink(detailId); return; }
-  if(e.target.id==='detail-delete'){
+
+  if(id==='detail-edit'){ openEdit(detailId); return; }
+  if(id==='detail-drink'){ openDrink(detailId); return; }
+  if(id==='detail-delete'){
     if(!confirm('Eliminare questo vino?')) return;
-    const id=detailId; closeOverlay();
-    try{ await fbDel('wines/'+id); showToast('Vino eliminato'); }catch(e){ showToast('Errore'); }
+    const wid=detailId; closeOverlay();
+    try{ await fbDel('wines/'+wid); showToast('Vino eliminato'); }catch(err){ showToast('Errore'); }
     return;
   }
-  if(e.target.id==='consumed-delete'){
+  if(id==='consumed-delete'){
     if(!confirm('Rimuovere questa voce?')) return;
-    const id=e.target.dataset.id; closeOverlay();
-    try{ await fbDel('consumed/'+id); showToast('Voce rimossa'); }catch(e){ showToast('Errore'); }
+    const cid=btn.dataset.id; closeOverlay();
+    try{ await fbDel('consumed/'+cid); showToast('Voce rimossa'); }catch(err){ showToast('Errore'); }
     return;
   }
-  if(e.target.id==='menu-export'){ exportJSON(); closeOverlay(); return; }
-  if(e.target.id==='menu-import'){ closeOverlay(); setTimeout(importJSON,100); return; }
-  if(e.target.id==='menu-pwd'){ changePwd(); return; }
-  if(e.target.id==='menu-close'){ closeOverlay(); return; }
+
+  if(id==='menu-export'){ exportJSON(); closeOverlay(); return; }
+  if(id==='menu-import'){ closeOverlay(); setTimeout(importJSON,100); return; }
+  if(id==='menu-pwd'){ changePwd(); return; }
 });
 
 // ─── DETAIL SHEETS ───────────────────────────────────────────
@@ -641,9 +650,7 @@ function detailSheet(id){
   </div>`;
 }
 
-document.getElementById('overlay-root').addEventListener('click', e=>{
-  if(e.target.id==='detail-close') closeOverlay();
-});
+// single listener below handles all overlay clicks
 
 function consumedDetailSheet(id){
   const w=consumed.find(x=>x.id===id); if(!w) return '';
